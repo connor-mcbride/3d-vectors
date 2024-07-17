@@ -147,11 +147,15 @@ class Vector:
     def __repr__(self) -> str:
         if self.dimension == 2:
             components_str = "\n\t".join(["[" + ", ".join(map(str, row)) + "]," for row in self.components])
-            return f"vector([{components_str[:-1]}])"
-        return "vector({})".format(self.components)
+            return f"Vector([{components_str[:-1]}])"
+        return "Vector({})".format(self.components)
 
 
 def norm(vector: Vector | list) -> float:
+    """Returns the norm of a vector or matrix.
+    vector - List of integers or floats representing the vector.
+                Can also be a list of lists for 2D vectors.
+    """
     if not isinstance(vector, (Vector, list)):
         raise TypeError("Vector must be of type 'Vector' or 'list'.")
     
@@ -160,74 +164,99 @@ def norm(vector: Vector | list) -> float:
             raise TypeError("All items in the list must be integers or floats.")
         return sum(a**2 for a in vector)**0.5
     if vector.dimension == 2:
-        return sum(sum(a**2 for a in row) for row in vector.components)**0.5
-    return sum(a**2 for a in vector.components)**0.5
+        return sum(sum(a**2 for a in row) for row in vector)**0.5
+    return sum(a**2 for a in vector)**0.5
+
+
+def dot_1d(vector1: Vector, vector2: Vector) -> float:
+    if len(vector1) != len(vector2):
+        raise ValueError("Vectors must have the same length.")
+    return sum(a * b for a, b in zip(vector1, vector2))
+
+
+def dot_2d(vector1: Vector, vector2: Vector) -> Vector:
+    if vector1.shape[1] != vector2.shape[0]:
+        vector1, vector2 = vector2, vector1
+    if vector1.shape[1] != vector2.shape[0]:
+        raise ValueError("Vectors are not correct dimensions for dot product.")
+    
+    return Vector([[sum(a * b for a, b in zip(row, col)) for col in zip(*vector2)] for row in vector1])
 
 
 def dot(vector1: Vector | list, vector2: Vector | list) -> float:
-    if not (isinstance(vector1, (Vector, list)) and isinstance(vector2, (Vector, list))):
-        raise TypeError("Vectors must be of type 'Vector' or 'list'.")
-    if isinstance(vector1, list):
-        vector1 = Vector(vector1)
-    if isinstance(vector2, list):
-        vector2 = Vector(vector2)
+    """Returns the dot product of two vectors."""
+    vector1 = vector1 if isinstance(vector1, Vector) else Vector(vector1)
+    vector2 = vector2 if isinstance(vector2, Vector) else Vector(vector2)
 
     if vector1.dimension == 1 and vector2.dimension == 1:
-        if len(vector1) != len(vector2):
-            raise ValueError("Vectors must have the same length.")
-        return sum(a * b for a, b in zip(vector1.components, vector2.components))
+        return dot_1d(vector1, vector2)
     elif vector1.dimension == 2 and vector2.dimension == 2:
-        if vector1.shape[1] != vector2.shape[0] or vector1.shape[0] != vector2.shape[1]:
-            raise ValueError("Vectors are not correct dimensions for dot product.")
-        return matmul(vector1, vector2)
-    if vector1.dimension == 2 and vector2.dimension == 1:
+        return dot_2d(vector1, vector2)
+    elif vector1.dimension == 2 and vector2.dimension == 1:
         if vector1.shape[1] != vector2.shape[0]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
-        return Vector([sum(a * b for a, b in zip(row, vector2.components)) for row in vector1.components])
-    if vector1.dimension == 1 and vector2.dimension == 2:
-        if vector1.shape[0] != vector2.shape[1]:
+        return Vector([sum(a * b for a, b in zip(row, vector2)) for row in vector1])
+    elif vector1.dimension == 1 and vector2.dimension == 2:
+        vector1, vector2 = vector2, vector1
+        if vector1.shape[1] != vector2.shape[0]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
-        return Vector([sum(a * b for a, b in zip(vector1.components, row)) for row in vector2.components])
+        return Vector([sum(a * b for a, b in zip(vector2, col)) for col in zip(*vector1)])
     
 
 def matmul(vector1: Vector | list, vector2: Vector | list) -> Vector:
-    if not (isinstance(vector1, (Vector, list)) and isinstance(vector2, (Vector, list))):
-        raise TypeError("Vectors must be of type 'Vector' or 'list'.")
-    if isinstance(vector1, list):
-        vector1 = Vector(vector1)
-    if isinstance(vector2, list):
-        vector2 = Vector(vector2)
+    """Returns the matrix product of two vectors."""
+    vector1 = vector1 if isinstance(vector1, Vector) else Vector(vector1)
+    vector2 = vector2 if isinstance(vector2, Vector) else Vector(vector2)
 
     if vector1.dimension == 1 and vector2.dimension == 1:
-        if len(vector1) != len(vector2):
-            raise ValueError("Vectors must have the same length.")
-        return dot(vector1, vector2)
+        return Vector([dot_1d(vector1, vector2)])
     elif vector1.dimension == 2 and vector2.dimension == 2:
-        if vector1.shape[1] != vector2.shape[0] or vector1.shape[0] != vector2.shape[1]:
-            raise ValueError("Vectors are not correct dimensions for dot product.")
-        return Vector([[sum(a * b for a, b in zip(row1, col2)) for col2 in zip(*vector2.components)] for row1 in vector1.components])
+        return dot_2d(vector1, vector2)
     if vector1.dimension == 2 and vector2.dimension == 1:
         if vector1.shape[1] != vector2.shape[0]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
-        return dot(vector1, vector2)
+        return Vector([sum(a * b for a, b in zip(row, vector2)) for row in vector1])
     if vector1.dimension == 1 and vector2.dimension == 2:
-        if vector1.shape[0] != vector2.shape[1]:
+        vector1, vector2 = vector2, vector1
+        if vector1.shape[1] != vector2.shape[0]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
-        return dot(vector1, vector2)
+        return Vector([sum(a * b for a, b in zip(vector2, col)) for col in zip(*vector1)])
 
 
-def cross(vector1: Vector | list, vector2: Vector | list) -> float:
-    pass
+def cross(vector1: Vector | list, vector2: Vector | list) -> Vector:
+    """Returns the cross product of two 3D vectors.
+    vector1 - First vector.
+    vector2 - Second vector.
+    """
+    vector1 = vector1 if isinstance(vector1, Vector) else Vector(vector1)
+    vector2 = vector2 if isinstance(vector2, Vector) else Vector(vector2)
+
+    if vector1.dimension == 1 and vector2.dimension == 1:
+        if len(vector1) != 3 or len(vector2) != 3:
+            raise ValueError("Vectors must be 3D.")
+        return Vector([vector1[1] * vector2[2] - vector1[2] * vector2[1],
+                       vector1[2] * vector2[0] - vector1[0] * vector2[2],
+                       vector1[0] * vector2[1] - vector1[1] * vector2[0]])
+    raise ValueError("Given vectors cannot be matrices.")
 
 
 def det(vector: Vector | list) -> float:
+    """Calculates the determinant of an n x n matrix.
+    vector - List of lists representing the matrix.
+    """
     pass
 
 
 def inv(vector: Vector | list) -> Vector:
+    """Calculates the inverse of an n x n matrix.
+    vector - List of lists representing the matrix.
+    """
     pass
 
 
 def tranpose(vector: Vector | list) -> Vector:
     pass
+    # vector = vector if isinstance(vector, Vector) else Vector(vector)
+
+    # return Vector([list(row) for row in zip(*vector)])
     
