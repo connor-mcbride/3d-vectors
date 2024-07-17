@@ -5,7 +5,7 @@ class Vector:
     
     Example usage:
     v1 = Vector([1, 2, 3])
-    v2 = Vector([[1, 0], [0, 1]])
+    v2 = Vector([[1, 0], [3, 1]])
     v3 = Vector([[1, 2], [3, 4], [5, 6]])
     >>> v1.shape
     (3,)
@@ -16,7 +16,7 @@ class Vector:
     >>> v3.dimension
     2
     >>> v2.T
-    Vector([[1, 0], [0, 1]])
+    Vector([[1, 3], [0, 1]])
     """
     def __init__(self, components: list) -> None:
         if not isinstance(components, list):
@@ -140,15 +140,15 @@ class Vector:
     def __str__(self) -> str:
         if self.dimension == 2:
             components_str = "\n\t".join(["[" + ", ".join(map(str, row)) + "]," for row in self.components])
-            return f"Vector([{components_str[:-1]}])"
-        return "Vector({})".format(self.components)
+            return f"vector([{components_str[:-1]}])"
+        return "vector({})".format(self.components)
     
     
     def __repr__(self) -> str:
         if self.dimension == 2:
             components_str = "\n\t".join(["[" + ", ".join(map(str, row)) + "]," for row in self.components])
-            return f"Vector([{components_str[:-1]}])"
-        return "Vector({})".format(self.components)
+            return f"vector([{components_str[:-1]}])"
+        return "vector({})".format(self.components)
 
 
 def norm(vector: Vector | list) -> float:
@@ -183,11 +183,11 @@ def dot(vector1: Vector | list, vector2: Vector | list) -> float:
     if vector1.dimension == 2 and vector2.dimension == 1:
         if vector1.shape[1] != vector2.shape[0]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
-        return sum(sum(a * b for a, b in zip(row, vector2.components)) for row in vector1.components)
+        return Vector([sum(a * b for a, b in zip(row, vector2.components)) for row in vector1.components])
     if vector1.dimension == 1 and vector2.dimension == 2:
         if vector1.shape[0] != vector2.shape[1]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
-        return sum(sum(a * b for a, b in zip(vector1.components, row)) for row in vector2.components)
+        return Vector([sum(a * b for a, b in zip(vector1.components, row)) for row in vector2.components])
     
 
 def matmul(vector1: Vector | list, vector2: Vector | list) -> Vector:
@@ -205,7 +205,7 @@ def matmul(vector1: Vector | list, vector2: Vector | list) -> Vector:
     elif vector1.dimension == 2 and vector2.dimension == 2:
         if vector1.shape[1] != vector2.shape[0] or vector1.shape[0] != vector2.shape[1]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
-        return [[sum(a * b for a, b in zip(row1, col2)) for col2 in zip(*vector2.components)] for row1 in vector1.components]
+        return Vector([[sum(a * b for a, b in zip(row1, col2)) for col2 in zip(*vector2.components)] for row1 in vector1.components])
     if vector1.dimension == 2 and vector2.dimension == 1:
         if vector1.shape[1] != vector2.shape[0]:
             raise ValueError("Vectors are not correct dimensions for dot product.")
