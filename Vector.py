@@ -29,8 +29,6 @@ class Vector:
         elif any(isinstance(item, list) for item in components):
             raise ValueError("Invalid vector format: mix of lists and non-lists.")
         
-        self.components = components
-        self.T = tranpose(self)
         if len(components) == 0:
             self.shape = 0,
             self.dimension = 1
@@ -42,6 +40,29 @@ class Vector:
         else:
             self.shape = len(components),
             self.dimension = 1
+        self._transposed = False
+        self.components = components
+
+    
+    @property
+    def T(self) -> 'Vector':
+        if self.dimension == 1:
+            return self
+        transposed_view = Vector(self.components)
+        transposed_view._transposed = not self._transposed
+        return transposed_view
+    
+    
+    @property
+    def components(self) -> list:
+        if self._transposed:
+            return [list(row) for row in zip(*self._components)]
+        return self._components
+    
+
+    @components.setter
+    def components(self, values):
+        self._components = values
 
 
     def __add__(self, vector: 'Vector') -> 'Vector':
@@ -153,6 +174,7 @@ class Vector:
 
 def norm(vector: Vector | list) -> float:
     """Returns the norm of a vector or matrix.
+    The matrix norm used is the Frobenius norm.
     vector - List of integers or floats representing the vector.
                 Can also be a list of lists for 2D vectors.
     """
@@ -254,9 +276,13 @@ def inv(vector: Vector | list) -> Vector:
     pass
 
 
-def tranpose(vector: Vector | list) -> Vector:
-    pass
-    # vector = vector if isinstance(vector, Vector) else Vector(vector)
-
-    # return Vector([list(row) for row in zip(*vector)])
+def transpose(vector: Vector | list) -> Vector:
+    """Transposes the given the n x n or m x n matrix.
+    Given vectors just return the original vector.
+    vector - List of lists representing the matrix.
+    """
+    vector = vector if isinstance(vector, Vector) else Vector(vector)
+    if vector.dimension == 1:
+        return vector
     
+    return Vector([list(row) for row in zip(*vector.components)])
