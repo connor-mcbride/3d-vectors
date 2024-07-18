@@ -117,34 +117,63 @@ class Vector:
             return all(a == b for a, b in zip(self.components, vector.components))
 
 
-    def __getitem__(self, index: int | tuple) -> int | float | object:
-        if not isinstance(index, (int, tuple)):
-            raise TypeError("Index must be an integer.")
+    def __getitem__(self, index: int | tuple | slice) -> int | float | object:
+        if not isinstance(index, (int, tuple, slice)):
+            raise TypeError("Index must be an integer, tuple, or a slice.")
         
         if self.dimension == 2:
             if isinstance(index, tuple):
+                if len(index) != 2:
+                    raise ValueError("Index tuple must have exactly 2 elements for 2D vectors.")
                 return self.components[index[0]][index[1]]
             else:
                 return Vector(self.components[index])
-        elif self.dimension == 1 and isinstance(index, int):
-            return self.components[index]
-        
-        raise ValueError("Invalid index.")
-
-
-    def __setitem__(self, index: int | tuple, value: int | float) -> None:
-        if not isinstance(index, (int, tuple)):
-            raise TypeError("Index must be an integer.")
-        if not isinstance(value, (int, float)):
-            raise TypeError("Value must be an integer or float.")
-        
-        if self.dimension == 2 and isinstance(index, tuple):
-            self.components[index[0]][index[1]] = value
-        elif self.dimension == 1 and isinstance(index, int):
-            self.components[index] = value
+        elif self.dimension == 1:
+            if isinstance(index, (int, slice)):
+                return self.components[index]
+            else:
+                raise ValueError("Invalid index type.")
         else:
-            raise ValueError("Invalid index.")
-    
+            raise ValueError("Invalid vector dimension.")
+        
+
+    def __setitem__(self, index: int | tuple | slice, value: int | float | list | object) -> None:
+        if not isinstance(index, (int, tuple, slice)):
+            raise TypeError("Index must be an integer, tuple, or slice.")
+        
+        if self.dimension == 2:
+            if isinstance(index, tuple):
+                if len(index) != 2:
+                    raise ValueError("Index tuple must have exactly 2 elements for 2D vectors.")
+                if not isinstance(value, (int, float, list)):
+                    raise TypeError("Value must be an integer or float.")
+                value = value[0] if isinstance(value, list) else value
+                self.components[index[0]][index[1]] = value
+
+            elif isinstance(index, int):
+                if isinstance(value, Vector):
+                    value = value.components
+                if not isinstance(value, list) or len(value) != self.shape[1]:
+                    raise ValueError("Value must be a list of the correct length for 2D vectors.")
+                self.components[index] = value
+            else:
+                raise ValueError("Invalid index.")
+        elif self.dimension == 1:
+            if isinstance(index, int):
+                if not isinstance(value, (int, float)):
+                    raise TypeError("Value must be an integer, float, or vector.")
+                self.components[index] = value
+            elif isinstance(index, slice):
+                if not isinstance(value, list):
+                    raise TypeError("Value must be a list for a slice.")
+                if len(value) != len(self.components[index]):
+                    raise ValueError("Value must be a list of the correct length.")
+                self.components[index] = value
+            else:
+                raise ValueError("Index must be an integer or slice for 1D vectors.")
+        else:
+            raise ValueError("Invalid vector dimension.")
+
 
     def __matmul__(self, matrix: 'Vector') -> 'Vector':
         return matmul(self, matrix)
@@ -170,6 +199,10 @@ class Vector:
             components_str = "\n\t".join(["[" + ", ".join(map(str, row)) + "]," for row in self.components])
             return f"Vector([{components_str[:-1]}])"
         return "Vector({})".format(self.components)
+    
+
+    def copy(self) -> 'Vector':
+        return Vector(self.components)
 
 
 def norm(vector: Vector | list) -> float:
@@ -262,18 +295,106 @@ def cross(vector1: Vector | list, vector2: Vector | list) -> Vector:
     raise ValueError("Given vectors cannot be matrices.")
 
 
+def argmax(vector: Vector | list) -> int:
+    """Returns the index of the maximum value in the vector."""
+    vector = vector if isinstance(vector, Vector) else Vector(vector)
+    if vector.dimension == 2:
+        raise ValueError("Given vector cannot be a matrix.")
+    return max(range(len(vector)), key=lambda i: vector[i])
+
+
+def zeros(shape: tuple) -> Vector:
+    """Returns a zero vector or matrix of the given shape."""
+    if len(shape) == 1:
+        return Vector([0 for _ in range(shape[0])])
+    return Vector([[0 for _ in range(shape[1])] for _ in range(shape[0])])
+
+
+def ones(shape: tuple) -> Vector:
+    """Returns a vector or matrix of ones of the given shape."""
+    if len(shape) == 1:
+        return Vector([1 for _ in range(shape[0])])
+    return Vector([[1 for _ in range(shape[1])] for _ in range(shape[0])])
+
+
+def eye(n: int) -> Vector:
+    """Returns the identity matrix of size n x n."""
+    return Vector([[1 if i == j else 0 for j in range(n)] for i in range(n)])
+
+
+def absolute(vector: Vector | list) -> Vector:
+    """Returns the absolute value of the given vector."""
+    vector = vector if isinstance(vector, Vector) else Vector(vector)
+    if vector.dimension == 2:
+        return Vector([[abs(a) for a in row] for row in vector])
+    return Vector([abs(a) for a in vector])
+
+
+def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, int]:
+    """Returns the LU decomposition of an n x n matrix.
+    vector - List of lists representing the matrix.
+    Returns a tuple of two matrices, L and U, and an int swap_count.   
+    """
+    vector = vector if isinstance(vector, Vector) else Vector(vector)
+    if vector.dimension == 1:
+        raise ValueError("Matrix must be 2D.")
+    elif vector.shape[0] != vector.shape[1]:
+        raise ValueError("Matrix must be square.")
+    
+    n = len(vector)
+    L = zeros((n, n))
+    U = vector.copy()
+    P = eye(n)
+    swap_count = 0
+
+    for i in range(n):
+        # Pivoting
+        max_index = argmax(absolute([U[j][i] for j in range(i, n)])) + i
+        if i != max_index:
+            U[i], U[max_index] = U[max_index].copy(), U[i].copy()
+            P[i], P[max_index] = P[max_index].copy(), P[i].copy()
+            if i > 0:
+                L[i][:i], L[max_index][:i] = L[max_index][:i].copy(), L[i][:i].copy()
+            swap_count += 1
+
+        L[i][i] = 1
+        for j in range(i+1, n):
+            L[j][i] = U[j][i] / U[i][i]
+            U[j] -= L[j][i] * U[i]
+
+    return L, U, swap_count
+
+
 def det(vector: Vector | list) -> float:
     """Calculates the determinant of an n x n matrix.
+    Uses the LU decomposition method.
     vector - List of lists representing the matrix.
     """
-    pass
+    vector = vector if isinstance(vector, Vector) else Vector(vector)
+    tol = 1e-12
+    if vector.dimension == 1:
+        raise ValueError("Matrix must be 2D.")
+    elif vector.shape[0] != vector.shape[1]:
+        raise ValueError("Matrix must be square.")
+    
+    _, U, swap_count = lu_decomposition(vector)
+    diag_U = [U[i][i] for i in range(len(U))]
+    det_U = 1
+    for i in range(len(U)):
+        det_U *= diag_U[i]
 
+    # Adjust the determinant if an odd number of row swaps were performed
+    if swap_count % 2 == 1:
+        det_U *= -1
+
+    return det_U if abs(det_U) > tol else 0.0
+    
 
 def inv(vector: Vector | list) -> Vector:
     """Calculates the inverse of an n x n matrix.
     vector - List of lists representing the matrix.
     """
-    pass
+    vector = vector if isinstance(vector, Vector) else Vector(vector)
 
 
 def transpose(vector: Vector | list) -> Vector:
