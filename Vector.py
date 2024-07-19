@@ -360,11 +360,12 @@ def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, Vector, int
 
         L = eye(n)
         for j in range(k+1, n):
-            try:
+            if U[k][k] != 0:
                 L[j][k] = -(U[j][k] / U[k][k])
                 LF[j][k] = (U[j][k] / U[k][k])
-            except ZeroDivisionError:
-                raise ValueError("Matrix is singular.")
+            else:
+                L[j][k] = 0
+                LF[j][k] = 0
         U = dot(L, U)
 
     for i in range(n):
@@ -401,6 +402,7 @@ def det(vector: Vector | list) -> float:
 def inv(vector: Vector | list) -> Vector:
     """Calculates the inverse of an n x n matrix.
     vector - List of lists representing the matrix.
+    Raises a ValueError if the matrix is singular.
     """
     vector = vector if isinstance(vector, Vector) else Vector(vector)
     if vector.dimension == 1:
@@ -408,29 +410,33 @@ def inv(vector: Vector | list) -> Vector:
     elif vector.shape[0] != vector.shape[1]:
         raise ValueError("Matrix must be square.")
 
-    n = len(vector)
+    n = vector.shape[0]
     I = eye(n)
     inv = zeros((n, n))
-    L, U, _, _ = lu_decomposition(vector)
+    L, U, P, _ = lu_decomposition(vector)
 
-    # Solve LY = I for Y using forward substituion
-    for i in range(n):
-        Y = zeros((n,))
-        for j in range(n):
-            Y[j] = I[j][i] - sum(L[j][k] * Y[k] for k in range(j))
-        for j in range(n):
-            inv[j][i] = Y[j]
-
-    # Solve UX = Y for X using backward substitution
-    for i in range(n):
-        X = zeros((n,))
-        for j in range(n-1, -1, -1):
+    def forward_substitution(L, b):
+        y = zeros((n,))
+        for i in range(n):
+            y[i] = b[i] - dot(L[i][:i], y[:i])
+        return y
+    
+    def backward_substitution(U, y):
+        x = zeros((n,))
+        for i in range(n-1, -1, -1):
             try:
-                X[j] = (inv[j][i] - sum(U[j][k] * X[k] for k in range(j+1, n))) / U[j][i]
-            except ZeroDivisionError:
+                x[i] = (y[i] - dot(U[i][i+1:], x[i+1:])) / U[i][i]
+            except:
                 raise ValueError("Matrix is singular.")
+        return x
+
+    # Solve for each column of the inverse
+    for i in range(n):
+        Pb = dot(P, [row[i] for row in I])
+        y = forward_substitution(L, Pb)
+        x = backward_substitution(U, y)
         for j in range(n):
-            inv[j][i] = X[j]
+            inv[j][i] = x[j]
 
     return inv
 
