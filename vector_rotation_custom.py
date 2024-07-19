@@ -1,4 +1,6 @@
-import numpy as np
+from Vector import Vector
+import Vector as vec
+import math
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -11,21 +13,20 @@ def rotation_matrix(axis, theta):
     Return the rotation matrix associated with counterclockwise rotation about
     the given axis by theta radians.
     """
-    axis = np.asarray(axis)
-    axis = axis / np.sqrt(np.dot(axis, axis))
-    a = np.cos(theta / 2.0)
-    b, c, d = -axis * np.sin(theta / 2.0)
+    axis = axis / math.sqrt(vec.dot(axis, axis))
+    a = math.cos(theta / 2.0)
+    b, c, d = -axis * math.sin(theta / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
     bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
-    return np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+    return Vector([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
                      [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
                      [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
 
 # Initial vector
-v = np.array([1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)])
+v = Vector([1/math.sqrt(3), 1/math.sqrt(3), 1/math.sqrt(3)])
 
 # Rotation axis and angle
-axis = np.array([1/np.sqrt(2), 1/np.sqrt(2), 0])
+axis = Vector([1/math.sqrt(2), 1/math.sqrt(2), 0])
 theta = 0.25  # Small angle for smooth animation
 omega = axis * theta
 R = rotation_matrix(axis, theta) # Initial rotation matrix
@@ -46,7 +47,7 @@ def unitary_step(U):
     where
     U_0 = A.
     """
-    U_inv_transpose = np.linalg.inv(U).T
+    U_inv_transpose = vec.inv(U).T
     return 0.5 * (U + U_inv_transpose)
 
 
@@ -59,22 +60,22 @@ def polar_decomposition(A, tol=1e-6):
     U = A
     while True:
         U_new = unitary_step(U)
-        if np.linalg.norm(U_new - U) < tol:
+        if vec.norm(U_new - U) < tol:
             return U_new
         U = U_new
 
 
 def update(num):
     global R, v, quiver
-    Psi = np.array([[0, -omega[2]*theta, omega[1]*theta],
+    Psi = Vector([[0, -omega[2]*theta, omega[1]*theta],
                       [omega[2]*theta, 0, -omega[0]*theta],
                       [-omega[1]*theta, omega[0]*theta, 0]])
     R_dot = Psi @ R
     R += R_dot
     R = polar_decomposition(R)
+    print(vec.det(R))
     print(R)
-    print(np.linalg.det(R))
-    v_new = np.dot(R, v)
+    v_new = vec.dot(R, v)
     quiver.remove()
     quiver = ax.quiver(0, 0, 0, v_new[0], v_new[1], v_new[2])
 
@@ -92,8 +93,8 @@ def init():
 
 ani = FuncAnimation(fig, update, frames=100, init_func=init, interval=50, blit=False)
 
-origins = np.zeros((3, 3))
-directions = np.eye(3)
+origins = vec.zeros((3, 3))
+directions = vec.eye(3)
 colors = ['r', 'g', 'b']
 
 for i in range(3):

@@ -73,8 +73,7 @@ class Vector:
             
             if self.dimension == 2:
                 return Vector([[a + b for a, b in zip(row1, row2)] for row1, row2 in zip(self.components, vector.components)])
-            else:
-                return Vector([a + b for a, b in zip(self.components, vector.components)])
+            return Vector([a + b for a, b in zip(self.components, vector.components)])
         
         raise TypeError("Unsupported operand type(s) for +: 'Vector' and '{}'".format(type(vector).__name__))
 
@@ -87,8 +86,7 @@ class Vector:
             
             if self.dimension == 2:
                 return Vector([[a - b for a, b in zip(row1, row2)] for row1, row2 in zip(self.components, vector.components)])
-            else:
-                return Vector([a - b for a, b in zip(self.components, vector.components)])
+            return Vector([a - b for a, b in zip(self.components, vector.components)])
         
         raise TypeError("Unsupported operand type(s) for -: 'Vector' and '{}'".format(type(vector).__name__))
 
@@ -99,12 +97,30 @@ class Vector:
         
         if self.dimension == 2:
             return Vector([[scalar * a for a in row] for row in self.components])
-        else:
-            return Vector([scalar * a for a in self.components])
+        return Vector([scalar * a for a in self.components])
+        
+
+    def __truediv__(self, scalar: int | float) -> 'Vector':
+        if not isinstance(scalar, (int, float)):
+            raise TypeError("Unsupported operand type(s) for /: 'Vector' and '{}'".format(type(scalar).__name__))
+        
+        if self.dimension == 2:
+            return Vector([[a / scalar for a in row] for row in self.components])
+        return Vector([a / scalar for a in self.components])
         
 
     def __rmul__(self, scalar: int | float) -> 'Vector':
         return self.__mul__(scalar)
+    
+
+    def __rdiv__(self, scalar: int | float) -> 'Vector':
+        return self.__truediv__(scalar)
+    
+
+    def __neg__(self) -> 'Vector':
+        if self.dimension == 2:
+            return Vector([[-a for a in row] for row in self.components])
+        return Vector([-a for a in self.components])
 
 
     def __eq__(self, vector: 'Vector') -> bool:
