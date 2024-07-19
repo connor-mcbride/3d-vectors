@@ -65,7 +65,8 @@ class Vector:
         self._components = values
 
 
-    def __add__(self, vector: 'Vector') -> 'Vector':
+    def __add__(self, vector: list | object) -> 'Vector':
+        vector = Vector(vector) if isinstance(vector, list) else vector
         if isinstance(vector, Vector):
             if self.shape != vector.shape:
                 raise ValueError("Vectors must have the same shape.")
@@ -75,10 +76,11 @@ class Vector:
             else:
                 return Vector([a + b for a, b in zip(self.components, vector.components)])
         
-        raise TypeError("Unsupported operand type(s) for +: 'Vector' and '{}'".format(type(other).__name__))
+        raise TypeError("Unsupported operand type(s) for +: 'Vector' and '{}'".format(type(vector).__name__))
 
 
-    def __sub__(self, vector: 'Vector') -> 'Vector':
+    def __sub__(self, vector: list | object) -> 'Vector':
+        vector = Vector(vector) if isinstance(vector, list) else vector
         if isinstance(vector, Vector):
             if self.shape != vector.shape:
                 raise ValueError("Vectors must have the same shape.")
@@ -88,7 +90,7 @@ class Vector:
             else:
                 return Vector([a - b for a, b in zip(self.components, vector.components)])
         
-        raise TypeError("Unsupported operand type(s) for -: 'Vector' and '{}'".format(type(other).__name__))
+        raise TypeError("Unsupported operand type(s) for -: 'Vector' and '{}'".format(type(vector).__name__))
 
 
     def __mul__(self, scalar: int | float) -> 'Vector':
@@ -106,9 +108,8 @@ class Vector:
 
 
     def __eq__(self, vector: 'Vector') -> bool:
-        if not isinstance(vector, Vector):
-            return False
-        if self.shape != vector.shape:
+        vector = Vector(vector) if isinstance(vector, list) else vector
+        if not isinstance(vector, Vector) or self.shape != vector.shape:
             return False
         
         if self.dimension == 2:
@@ -330,39 +331,46 @@ def absolute(vector: Vector | list) -> Vector:
     return Vector([abs(a) for a in vector])
 
 
-def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, int]:
+def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, Vector, int]:
     """Returns the LU decomposition of an n x n matrix.
     vector - List of lists representing the matrix.
-    Returns a tuple of two matrices, L and U, and an int swap_count.   
+    Returns a tuple of three matrices, L, U, and P, and an int swap_count.   
     """
     vector = vector if isinstance(vector, Vector) else Vector(vector)
-    if vector.dimension == 1:
-        raise ValueError("Matrix must be 2D.")
-    elif vector.shape[0] != vector.shape[1]:
-        raise ValueError("Matrix must be square.")
+    if vector.dimension != 2 or vector.shape[0] != vector.shape[1]:
+        raise ValueError("Matrix must be a square 2D matrix.")
     
-    n = len(vector)
-    L = zeros((n, n))
-    U = vector.copy()
+    n = vector.shape[0]
     P = eye(n)
+    L = eye(n)
+    U = vector.copy()
+    PF = eye(n)
+    LF = zeros((n, n))
     swap_count = 0
 
-    for i in range(n):
-        # Pivoting
-        max_index = argmax(absolute([U[j][i] for j in range(i, n)])) + i
-        if i != max_index:
-            U[i], U[max_index] = U[max_index].copy(), U[i].copy()
-            P[i], P[max_index] = P[max_index].copy(), P[i].copy()
-            if i > 0:
-                L[i][:i], L[max_index][:i] = L[max_index][:i].copy(), L[i][:i].copy()
+    for k in range(0, n-1):
+        max_index = argmax(absolute([row[0] for row in U])) + k
+        if max_index != k:
+            P = eye(n)
+            P[max_index][k:n], P[k][k:n] = P[k][k:n], P[max_index][k:n]
+            U[max_index][k:n], U[k][k:n] = U[k][k:n], U[max_index][k:n]
+            PF = dot(P, PF)
+            LF = dot(P, LF)
             swap_count += 1
 
-        L[i][i] = 1
-        for j in range(i+1, n):
-            L[j][i] = U[j][i] / U[i][i]
-            U[j] -= L[j][i] * U[i]
+        L = eye(n)
+        for j in range(k+1, n):
+            try:
+                L[j][k] = -(U[j][k] / U[k][k])
+                LF[j][k] = (U[j][k] / U[k][k])
+            except ZeroDivisionError:
+                raise ValueError("Matrix is singular.")
+        U = dot(L, U)
 
-    return L, U, swap_count
+    for i in range(n):
+        LF[i, i] = 1
+
+    return LF, U, PF, swap_count
 
 
 def det(vector: Vector | list) -> float:
@@ -377,7 +385,7 @@ def det(vector: Vector | list) -> float:
     elif vector.shape[0] != vector.shape[1]:
         raise ValueError("Matrix must be square.")
     
-    _, U, swap_count = lu_decomposition(vector)
+    _, U, _, swap_count = lu_decomposition(vector)
     diag_U = [U[i][i] for i in range(len(U))]
     det_U = 1
     for i in range(len(U)):
@@ -395,6 +403,36 @@ def inv(vector: Vector | list) -> Vector:
     vector - List of lists representing the matrix.
     """
     vector = vector if isinstance(vector, Vector) else Vector(vector)
+    if vector.dimension == 1:
+        raise ValueError("Matrix must be 2D.")
+    elif vector.shape[0] != vector.shape[1]:
+        raise ValueError("Matrix must be square.")
+
+    n = len(vector)
+    I = eye(n)
+    inv = zeros((n, n))
+    L, U, _, _ = lu_decomposition(vector)
+
+    # Solve LY = I for Y using forward substituion
+    for i in range(n):
+        Y = zeros((n,))
+        for j in range(n):
+            Y[j] = I[j][i] - sum(L[j][k] * Y[k] for k in range(j))
+        for j in range(n):
+            inv[j][i] = Y[j]
+
+    # Solve UX = Y for X using backward substitution
+    for i in range(n):
+        X = zeros((n,))
+        for j in range(n-1, -1, -1):
+            try:
+                X[j] = (inv[j][i] - sum(U[j][k] * X[k] for k in range(j+1, n))) / U[j][i]
+            except ZeroDivisionError:
+                raise ValueError("Matrix is singular.")
+        for j in range(n):
+            inv[j][i] = X[j]
+
+    return inv
 
 
 def transpose(vector: Vector | list) -> Vector:

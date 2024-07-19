@@ -8,6 +8,7 @@ __pycache__/
 *.pyc
 
 # Ignore other temporary files
+lu.py
 *.log
 *.sqlite3
 *.pyo

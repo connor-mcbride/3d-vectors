@@ -32,9 +32,36 @@ v5 = Vector([5, 6])
 
 # print(vec.matmul(v6, v7))
 
+# print(Vector([[1, 2], [3, 4]])[0:][0])
 print(vec.det(v3))
 print(vec.det([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
-print(v1.copy())
-print(vec.det(v4))
-print(vec.det([[7, 8, 2], [8, 1, 8], [2, 1, 0]]))
-print(vec.det([[4, 3], [8, 4]]))
+print(vec.det([[2, 9, 2, 4], [3, 4, 2, 0], [1, 1, 9, 8], [4, 2, 8, 4]]))
+print(vec.det([[0, 1], [0, 0]]))
+# print(v1.copy())
+# print(vec.det(v4))
+# print(vec.det([[7, 8, 2], [8, 1, 8], [2, 1, 0]]))
+# print(vec.det([[4, 3], [8, 4]]))
+
+# print(vec.inv([[5, 3], [4, 9]]))
+# print(vec.inv([[1, 0, 0], [0, 1, 0], [0, 0, 1]]))
+# print(vec.inv(v8))
+
+# mat = [[2, -1, -2],
+#        [-4, 6, 3],
+#        [-4, -2, 8]]
+# L, U, P, _ = vec.lu_decomposition(mat)
+# print(L, U)
+# print(L @ U == P @ mat)
+# print(P)
+
+# L, U, P = vec.lu_decomposition([[0, 1], [1, 0]])
+# print(L)
+# print(U)
+# print(P)
+# print(L @ U == P @ [[0, 1], [1, 0]])
+# print(L, U)
+# print(L @ U)
+# print(vec.matmul(P, [[0, 1], [1, 0]]))
+# print(vec.inv([[1, 2, 3], [4, 5, 6], [7, 8, 8]]))
+
+# print(vec.inv([[3, 2], [4, 5]]))
