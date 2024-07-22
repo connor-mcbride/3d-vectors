@@ -364,7 +364,7 @@ def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, Vector, int
     LF = zeros((n, n))
     swap_count = 0
 
-    for k in range(0, n-1):
+    for k in range(n-1):
         max_index = argmax(absolute([row[0] for row in U])) + k
         if max_index != k:
             P = eye(n)

@@ -47,7 +47,7 @@ def unitary_step(U):
     where
     U_0 = A.
     """
-    U_inv_transpose = vec.inv(U).T
+    U_inv_transpose = vec.transpose(vec.inv(U))
     return 0.5 * (U + U_inv_transpose)
 
 
@@ -68,8 +68,8 @@ def polar_decomposition(A, tol=1e-6):
 def update(num):
     global R, v, quiver
     Psi = Vector([[0, -omega[2]*theta, omega[1]*theta],
-                      [omega[2]*theta, 0, -omega[0]*theta],
-                      [-omega[1]*theta, omega[0]*theta, 0]])
+                    [omega[2]*theta, 0, -omega[0]*theta],
+                    [-omega[1]*theta, omega[0]*theta, 0]])
     R_dot = Psi @ R
     R += R_dot
     R = polar_decomposition(R)
