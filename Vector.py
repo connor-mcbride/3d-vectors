@@ -129,9 +129,9 @@ class Vector:
             return False
         
         if self.dimension == 2:
-            return all(all(a == b for a, b in zip(row1, row2)) for row1, row2 in zip(self.components, vector.components))
+            return all(all(abs(a - b) < 1e-6 for a, b in zip(row1, row2)) for row1, row2 in zip(self.components, vector.components))
         else:
-            return all(a == b for a, b in zip(self.components, vector.components))
+            return all(abs(a - b) < 1e-6 for a, b in zip(self.components, vector.components))
 
 
     def __getitem__(self, index: int | tuple | slice) -> int | float | object:
