@@ -110,3 +110,8 @@ def test_transpose():
                                    [1, 8, 3, 1],
                                    [2, 6, 1, 2]])
     assert E_transpose == expected_E_transpose
+
+    F = Vector([5, 1, 2])
+    F_transpose = F.T
+    expected_F_transpose = Vector([5, 1, 2])
+    assert F_transpose == expected_F_transpose
