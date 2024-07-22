@@ -50,8 +50,6 @@ class Graph:
     def plot(self, xcoords: list, ycoords: list) -> None:
         if len(xcoords) != len(ycoords):
             raise ValueError("xcoords and ycoords must have the same length.")
-        xcoords = sorted(xcoords)
-        ycoords = sorted(ycoords)
         self.points = list(zip(xcoords, ycoords))
 
         self.root = tk.Tk()
@@ -79,28 +77,30 @@ class Graph:
         # Scale x and y axes
         self._xlim = [min(xcoords), max(xcoords)]
         self._ylim = [min(ycoords), max(ycoords)]
+        x_margin = self.graph_width / 20
+        y_margin = self.graph_height / 20
         
         # Draw lines between points
         for i in range(len(self.points) - 1):
             x1, y1 = self.points[i]
             x2, y2 = self.points[i + 1]
-            x1 = self.canvas_width/2 + self.graph_width/2 * (x1 - self._xlim[0]) / (self._xlim[1] - self._xlim[0])
-            y1 = self.canvas_height/2 + self.graph_height/2 * (y1 - self._ylim[0]) / (self._ylim[1] - self._ylim[0])
-            x2 = self.canvas_width/2 + self.graph_width/2 * (x2 - self._xlim[0]) / (self._xlim[1] - self._xlim[0])
-            y2 = self.canvas_height/2 + self.graph_height/2 * (y2 - self._ylim[0]) / (self._ylim[1] - self._ylim[0])
+            x1 = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + ((x1 - self._xlim[0]) / (self._xlim[1] - self._xlim[0])) * (self.graph_width - (2 * x_margin))
+            y1 = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - ((y1 - self._ylim[0]) / (self._ylim[1] - self._ylim[0])) * (self.graph_height - (2 * y_margin))
+            x2 = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + ((x2 - self._xlim[0]) / (self._xlim[1] - self._xlim[0])) * (self.graph_width - (2 * x_margin))
+            y2 = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - ((y2 - self._ylim[0]) / (self._ylim[1] - self._ylim[0])) * (self.graph_height - (2 * y_margin))
             canvas.create_line(x1, y1, x2, y2, fill="black", width=2)
 
         # Draw axes labels
         num_ticks = 10
-        x_margin = self.graph_width / 20
-        y_margin = self.graph_height / 20
         xscale = (self.graph_width - (2 * x_margin)) / num_ticks
         yscale = (self.graph_height - (2 * y_margin)) / num_ticks
         for i in range(num_ticks + 1):
             x = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + (i * xscale)
             y = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - (i * yscale)
-            canvas.create_text(x, self.canvas_height / 2 + self.graph_height / 2 + 20, text=f"{(self._xlim[0] + i * (self._xlim[1] - self._xlim[0]) / num_ticks):.1f}")
-            canvas.create_text(self.canvas_width / 2 - self.graph_width / 2 - 20, y, text=f"{(self._ylim[0] + i * (self._ylim[1] - self._ylim[0]) / num_ticks):.1f}", angle=90)
+            canvas.create_text(x, self.canvas_height / 2 + self.graph_height / 2 + 20, 
+                               text=f"{(self._xlim[0] + i * (self._xlim[1] - self._xlim[0]) / num_ticks):.1f}")
+            canvas.create_text(self.canvas_width / 2 - self.graph_width / 2 - 20, y, 
+                               text=f"{(self._ylim[0] + i * (self._ylim[1] - self._ylim[0]) / num_ticks):.1f}", angle=90)
             canvas.create_line(x, self.canvas_height / 2 + self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2 + 10)
             canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 - self.graph_width / 2 - 10, y)
 
@@ -115,6 +115,6 @@ graph.xlabel("Time")
 graph.ylabel("Velocity")
 
 x = [0, 1, 2, 3, 4, 5]
-y = [0, 1, 4, 9, 16, 25]
+y = [0, 1, 6, 2, 16, -2]
 graph.plot(x, y)
 graph.show()
