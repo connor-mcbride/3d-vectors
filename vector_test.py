@@ -48,6 +48,151 @@ def test_addition():
     assert N == expected_N
 
 
+def test_subtraction():
+    """Test the subtraction of two vectors."""
+    A = Vector([1, 2, 3])
+    B = Vector([4, 5, 6])
+    C = A - B
+    expected_C = Vector([-3, -3, -3])
+    assert C == expected_C
+
+    D = Vector([1, 2, 3, 4])
+    E = Vector([5, 6, 7, 8])
+    F = D - E
+    expected_F = Vector([-4, -4, -4, -4])
+    assert F == expected_F
+
+    G = Vector([[1, 2, 3], [0, 2, 1]])
+    H = Vector([[3, 1, 2], [9, 3, 2], [6, 2, 0]])
+    with pytest.raises(ValueError):
+        G - H
+
+    I = Vector([[2, 9], [8, 7]])
+    J = Vector([[3, 4], [5, 6]])
+    K = I - J
+    expected_K = Vector([[-1, 5], [3, 1]])
+    assert K == expected_K
+
+    L = Vector([[0.02435193, 0.12113953, 0.51341871, 0.51406604],
+                [0.74607795, 0.68963792, 0.193141, 0.53882405],
+                [0.81867092, 0.08676632, 0.86602892, 0.39819585],
+                [0.73985199, 0.02076741, 0.91453214, 0.98062587]])
+    M = Vector([[0.85073188, 0.55378699, 0.31115142, 0.1628534 ],
+                [0.04462666, 0.67452745, 0.58452351, 0.87848518],
+                [0.96296666, 0.42955904, 0.92096604, 0.34789241],
+                [0.26936911, 0.30010564, 0.99791588, 0.29417954]])
+    N = L - M
+    expected_N = Vector([[-0.82637995, -0.43264746,  0.20226729,  0.35121264],
+                         [ 0.70145129,  0.01511047, -0.39138251, -0.33966113],
+                         [-0.14429574, -0.34279272, -0.05493712,  0.05030344],
+                         [ 0.47048288, -0.27933823, -0.08338374,  0.68644633]])
+    assert N == expected_N
+
+
+def test_scalar_multiplication():
+    """Test the scalar multiplication of a vector."""
+    A = Vector([1, 2, 3])
+    B = 2 * A
+    expected_B = Vector([2, 4, 6])
+    assert B == expected_B
+
+    C = Vector([1, 2, 3, 4])
+    D = 3 * C
+    expected_D = Vector([3, 6, 9, 12])
+    assert D == expected_D
+
+    E = Vector([[1, 2, 3], [4, 5, 6]])
+    F = -4 * E
+    expected_F = Vector([[-4, -8, -12], [-16, -20, -24]])
+    assert F == expected_F
+
+    G = Vector([[1, 2], [3, 4], [5, 6]])
+    H = 5 * G
+    expected_H = Vector([[5, 10], [15, 20], [25, 30]])
+    assert H == expected_H
+
+    I = Vector([[1, 2, 3, 4], [5, 6, 7, 8]])
+    J = 6 * I
+    expected_J = Vector([[6, 12, 18, 24], [30, 36, 42, 48]])
+    assert J == expected_J
+
+    K = Vector([[9, 2, 5], [8, 6, 1]])
+    assert -K == -1 * K
+
+    L = Vector([[2, 4], [6, 8]])
+    M = 0.5 * L
+    expected_M = Vector([[1, 2], [3, 4]])
+    assert M == expected_M
+
+    N = Vector([[5, 2], [9, 1]])
+    O = 0 * N
+    expected_O = Vector([[0, 0], [0, 0]])
+    assert O == expected_O
+
+
+def test_scalar_division():
+    """Test the scalar division of a vector."""
+    A = Vector([1, 2, 3])
+    B = A / 2
+    expected_B = Vector([0.5, 1, 1.5])
+    assert B == expected_B
+
+    C = Vector([1, 2, 3, 4])
+    D = C / 3
+    expected_D = Vector([1/3, 2/3, 1, 4/3])
+    assert D == expected_D
+
+    E = Vector([[1, 2, 3], [4, 5, 6]])
+    F = E / 4
+    expected_F = Vector([[1/4, 1/2, 3/4], [1, 5/4, 3/2]])
+    assert F == expected_F
+
+    G = Vector([[1, 2], [3, 4], [5, 6]])
+    H = G / 5
+    expected_H = Vector([[1/5, 2/5], [3/5, 4/5], [1, 6/5]])
+    assert H == expected_H
+
+    I = Vector([[1, 2, 3, 4], [5, 6, 7, 8]])
+    J = I / 6
+    expected_J = Vector([[1/6, 1/3, 1/2, 2/3], [5/6, 1, 7/6, 4/3]])
+    assert J == expected_J
+
+    K = Vector([[9, 2, 5], [8, 6, 1]])
+    L = K / 3
+    expected_L = Vector([[3, 2/3, 5/3], [8/3, 2, 1/3]])
+    assert L == expected_L
+
+    M = Vector([[2, 4], [6, 8]])
+    N = M / 2
+    expected_N = Vector([[1, 2], [3, 4]])
+    assert N == expected_N
+
+    O = Vector([[5, 2], [9, 1]])
+    P = O / 5
+    expected_P = Vector([[1, 2/5], [9/5, 1/5]])
+    assert P == expected_P
+
+
+def test_dot_product():
+    """Test the dot product of two vectors."""
+    A = Vector([1, 2, 3])
+    B = Vector([4, 5, 6])
+    assert_equal(vec.dot(A, B), 32)
+
+    C = Vector([1, 2, 3, 4])
+    D = Vector([5, 6, 7, 8])
+    assert_equal(vec.dot(C, D), 70)
+
+    E = Vector([-1/3, 5/7, -8/3])
+    F = Vector([2/3, 1/7, -4/3])
+    assert_equal(vec.dot(E, F), 3.4353741496598635)
+
+    G = Vector([5, 3, 3, 0])
+    H = Vector([3, 1, 2])
+    with pytest.raises(ValueError):
+        vec.dot(G, H)
+        
+
 def test_determinant():
     """Test the determinant of a matrix."""
     A = Vector([[0, 6], 
