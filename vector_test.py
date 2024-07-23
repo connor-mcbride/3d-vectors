@@ -3,7 +3,7 @@ import Vector as vec
 import pytest
 
 
-def assert_equal(x1, x2):
+def assert_equal(x1, x2): 
     assert abs(x1 - x2) < 1e-6
 
 
@@ -191,7 +191,82 @@ def test_dot_product():
     H = Vector([3, 1, 2])
     with pytest.raises(ValueError):
         vec.dot(G, H)
-        
+
+
+def test_cross_product():
+    """Test the cross product of two vectors."""
+    A = Vector([1, 2, 3])
+    B = Vector([4, 5, 6])
+    C = vec.cross(A, B)
+    expected_C = Vector([-3, 6, -3])
+    assert C == expected_C
+
+    D = Vector([1, 2, 3, 4])
+    E = Vector([5, 6, 7, 8])
+    with pytest.raises(ValueError):
+        vec.cross(D, E)
+
+    G = Vector([1, 2, 3])
+    H = Vector([4, 5, 6, 7])
+    with pytest.raises(ValueError):
+        vec.cross(G, H)
+
+    I = Vector([5, 3, 1])
+    J = Vector([2, 8, 6])
+    K = vec.cross(I, J)
+    expected_K = Vector([10, -28, 34])
+    assert K == expected_K
+
+    L = Vector([[1, 5], [0, 2]])
+    M = Vector([[3, 4], [1, 6]])
+    with pytest.raises(ValueError):
+        vec.cross(L, M)
+
+
+def test_norm():
+    """Test the norm of a vector."""
+    A = Vector([1, 2, 3])
+    assert_equal(vec.norm(A), 3.7416573867739413)
+
+    B = Vector([1, 2, 3, 4])
+    assert_equal(vec.norm(B), 5.477225575051661)
+
+    C = Vector([5, 3, 1])
+    assert_equal(vec.norm(C), 5.916079783099616)
+
+    D = Vector([2, 4, 6, 8])
+    assert_equal(vec.norm(D), 10.954451150103322)
+
+    E = Vector([0, 0, 0])
+    assert_equal(vec.norm(E), 0)
+
+    F = Vector([1, 1, 1])
+    assert_equal(vec.norm(F), 1.7320508075688772)
+
+    G = Vector([1, 1, 1, 1])
+    assert_equal(vec.norm(G), 2)
+
+    H = Vector([1, 2, 3, 4, 5])
+    assert_equal(vec.norm(H), 7.416198487095663)
+
+    I = Vector([1, 2, 3, 4, 5, 6])
+    assert_equal(vec.norm(I), 9.539392014169456)
+
+    J = Vector([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    assert_equal(vec.norm(J), 19.621416870348583)
+
+    K = Vector([[1, 2], [3, 4]])
+    assert_equal(vec.norm(K), 5.477225575051661)
+
+    L = Vector([[0, 3, 0, 2],
+                [5, 8, 0, 1],
+                [0, 8, 2, 8],
+                [4, 2, 1, 8]])
+    assert_equal(vec.norm(L), 17.88854381999832)
+
+    M = Vector([[5, 3, 1], [0, 2, 9]])
+    assert_equal(vec.norm(M), 10.954451150103322)
+    
 
 def test_determinant():
     """Test the determinant of a matrix."""
