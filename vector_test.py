@@ -7,6 +7,47 @@ def assert_equal(x1, x2):
     assert abs(x1 - x2) < 1e-6
 
 
+def test_addition():
+    """Test the addition of two vectors."""
+    A = Vector([1, 2, 3])
+    B = Vector([4, 5, 6])
+    C = A + B
+    expected_C = Vector([5, 7, 9])
+    assert C == expected_C
+
+    D = Vector([1, 2, 3, 4])
+    E = Vector([5, 6, 7, 8])
+    F = D + E
+    expected_F = Vector([6, 8, 10, 12])
+    assert F == expected_F
+
+    G = Vector([1, 2, 3])
+    H = Vector([4, 5, 6, 7])
+    with pytest.raises(ValueError):
+        G + H
+
+    I = Vector([[2, 9], [8, 7]])
+    J = Vector([[3, 4], [5, 6]])
+    K = I + J
+    expected_K = Vector([[5, 13], [13, 13]])
+    assert K == expected_K
+
+    L = Vector([[0.02435193, 0.12113953, 0.51341871, 0.51406604],
+                [0.74607795, 0.68963792, 0.193141, 0.53882405],
+                [0.81867092, 0.08676632, 0.86602892, 0.39819585],
+                [0.73985199, 0.02076741, 0.91453214, 0.98062587]])
+    M = Vector([[0.85073188, 0.55378699, 0.31115142, 0.1628534 ],
+                [0.04462666, 0.67452745, 0.58452351, 0.87848518],
+                [0.96296666, 0.42955904, 0.92096604, 0.34789241],
+                [0.26936911, 0.30010564, 0.99791588, 0.29417954]])
+    N = L + M
+    expected_N = Vector([[0.87508382, 0.67492652, 0.82457013, 0.67691944],
+                         [0.79070461, 1.36416537, 0.77766451, 1.41730923],
+                         [1.78163758, 0.51632537, 1.78699496, 0.74608827],
+                         [1.0092211 , 0.32087305, 1.91244801, 1.27480541]])
+    assert N == expected_N
+
+
 def test_determinant():
     """Test the determinant of a matrix."""
     A = Vector([[0, 6], 
@@ -115,3 +156,4 @@ def test_transpose():
     F_transpose = F.T
     expected_F_transpose = Vector([5, 1, 2])
     assert F_transpose == expected_F_transpose
+    

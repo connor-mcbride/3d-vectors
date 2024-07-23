@@ -183,12 +183,12 @@ graph.xlabel("Time")
 graph.ylabel("Velocity")
 graph.figure((800, 500))
 
-# from math import sin, pi
-# X = [i * (6 * pi) / 100 for i in range(300)]
-# Y = [sin(x) for x in X]
-# graph.plot(X, Y, gridlines=True, color="red")
+from math import sin, pi
+X = [i * (6 * pi) / 3000 for i in range(3000)]
+Y = [sin(x) for x in X]
+graph.scatter(X, Y, gridlines=True, color="red")
 
-X = [i for i in range(11)]
-Y = [2 * x for x in X]
-graph.scatter(X, Y, color="blue", gridlines=True)
+# X = [i for i in range(11)]
+# Y = [2 * x for x in X]
+# graph.scatter(X, Y, color="blue", gridlines=True)
 graph.show()

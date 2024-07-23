@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import sys
 
 
 # Define the rotation matrix
@@ -27,7 +28,7 @@ v = Vector([1/math.sqrt(3), 1/math.sqrt(3), 1/math.sqrt(3)])
 
 # Rotation axis and angle
 axis = Vector([1/math.sqrt(2), 1/math.sqrt(2), 0])
-theta = 0.25  # Small angle for smooth animation
+theta = 0.1  # Small angle for smooth animation
 omega = axis * theta
 R = rotation_matrix(axis, theta) # Initial rotation matrix
 
@@ -47,19 +48,21 @@ def unitary_step(U):
     where
     U_0 = A.
     """
-    U_inv_transpose = vec.transpose(vec.inv(U))
+    U_inv_transpose = vec.inv(U).T.copy()
     return 0.5 * (U + U_inv_transpose)
 
 
-def polar_decomposition(A, tol=1e-6):
+def polar_decomposition(A: Vector, tol=1e-12):
     """Returns the unitary matrix U in the polar decomposition of a matrix A.
     A = UP, where U is unitary and P is positive semi-definite Hermitian.
     A - matrix to be decomposed.
     tol - tolerance for convergence.
     """
-    U = A
+    U = A.copy()
     while True:
         U_new = unitary_step(U)
+        # print(f"Determinant of U_new: {vec.det(U_new)}")
+        # print(f"Orthogonality check: {vec.dot(U_new.T, U_new)}")
         if vec.norm(U_new - U) < tol:
             return U_new
         U = U_new
@@ -73,8 +76,12 @@ def update(num):
     R_dot = Psi @ R
     R += R_dot
     R = polar_decomposition(R)
-    print(vec.det(R))
-    print(R)
+    det = vec.det(R)
+    print(f"Determinant of R: {det}", end='\n\n')
+    if det < 0:
+        sys.exit(1)
+    # print(vec.det(R))
+    # print(R)
     v_new = vec.dot(R, v)
     quiver.remove()
     quiver = ax.quiver(0, 0, 0, v_new[0], v_new[1], v_new[2])
@@ -91,7 +98,7 @@ def init():
     return quiver
 
 
-ani = FuncAnimation(fig, update, frames=100, init_func=init, interval=50, blit=False)
+ani = FuncAnimation(fig, update, frames=500, init_func=init, interval=50, blit=False)
 
 origins = vec.zeros((3, 3))
 directions = vec.eye(3)

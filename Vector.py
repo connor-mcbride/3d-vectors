@@ -206,14 +206,14 @@ class Vector:
 
     def __str__(self) -> str:
         if self.dimension == 2:
-            components_str = "\n\t".join(["[" + ", ".join(map(str, row)) + "]," for row in self.components])
+            components_str = "\n\t".join(["[" + ", ".join([str(0 if abs(val) < 1e-6 else val) for val in row]) + "]," for row in self.components])
             return f"vector([{components_str[:-1]}])"
         return "vector({})".format(self.components)
     
     
     def __repr__(self) -> str:
         if self.dimension == 2:
-            components_str = "\n\t".join(["[" + ", ".join(map(str, row)) + "]," for row in self.components])
+            components_str = "\n\t".join(["[" + ", ".join([str(0 if abs(val) < 1e-6 else val) for val in row]) + "]," for row in self.components])
             return f"Vector([{components_str[:-1]}])"
         return "Vector({})".format(self.components)
     
@@ -368,8 +368,8 @@ def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, Vector, int
         max_index = argmax(absolute([row[0] for row in U])) + k
         if max_index != k:
             P = eye(n)
-            P[max_index][k:n], P[k][k:n] = P[k][k:n], P[max_index][k:n]
-            U[max_index][k:n], U[k][k:n] = U[k][k:n], U[max_index][k:n]
+            P[max_index][k:n], P[k][k:n] = P[k][k:n].copy(), P[max_index][k:n].copy()
+            U[max_index][k:n], U[k][k:n] = U[k][k:n].copy(), U[max_index][k:n].copy()
             PF = dot(P, PF)
             LF = dot(P, LF)
             swap_count += 1

@@ -22,11 +22,11 @@ def rotation_matrix(axis, theta):
                      [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
 
 # Initial vector
-v = np.array([1/np.sqrt(3), 1/np.sqrt(3), 1/np.sqrt(3)])
+v = np.array([1, 0, 0])
 
 # Rotation axis and angle
-axis = np.array([1/np.sqrt(2), 1/np.sqrt(2), 0])
-theta = 0.25  # Small angle for smooth animation
+axis = np.array([1 / np.sqrt(2), 1 / np.sqrt(2), 0])
+theta = 1  # Small angle for smooth animation
 omega = axis * theta
 R = rotation_matrix(axis, theta) # Initial rotation matrix
 
