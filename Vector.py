@@ -1,3 +1,5 @@
+import copy
+
 class Vector:
     """Vector class for 1D and 2D vectors.
     components - List of integers or floats representing the vector.
@@ -219,7 +221,8 @@ class Vector:
     
 
     def copy(self) -> 'Vector':
-        return Vector(self.components)
+        new_components = copy.deepcopy(self.components)
+        return Vector(new_components)
 
 
 def norm(vector: Vector | list) -> float:
@@ -248,8 +251,6 @@ def dot_1d(vector1: Vector, vector2: Vector) -> float:
 
 def dot_2d(vector1: Vector, vector2: Vector) -> Vector:
     if vector1.shape[1] != vector2.shape[0]:
-        vector1, vector2 = vector2, vector1
-    if vector1.shape[1] != vector2.shape[0]:
         raise ValueError("Vectors are not correct dimensions for dot product.")
     
     return Vector([[sum(a * b for a, b in zip(row, col)) for col in zip(*vector2)] for row in vector1])
@@ -269,10 +270,7 @@ def dot(vector1: Vector | list, vector2: Vector | list) -> float:
             raise ValueError("Vectors are not correct dimensions for dot product.")
         return Vector([sum(a * b for a, b in zip(row, vector2)) for row in vector1])
     elif vector1.dimension == 1 and vector2.dimension == 2:
-        vector1, vector2 = vector2, vector1
-        if vector1.shape[1] != vector2.shape[0]:
-            raise ValueError("Vectors are not correct dimensions for dot product.")
-        return Vector([sum(a * b for a, b in zip(vector2, col)) for col in zip(*vector1)])
+        raise ValueError("Vectors are not correct dimensions for dot product.")
     
 
 def matmul(vector1: Vector | list, vector2: Vector | list) -> Vector:
@@ -368,8 +366,8 @@ def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, Vector, int
         max_index = argmax(absolute([row[0] for row in U])) + k
         if max_index != k:
             P = eye(n)
-            P[max_index][k:n], P[k][k:n] = P[k][k:n].copy(), P[max_index][k:n].copy()
-            U[max_index][k:n], U[k][k:n] = U[k][k:n].copy(), U[max_index][k:n].copy()
+            P[max_index][k:n], P[k][k:n] = P[k][k:n], P[max_index][k:n]
+            U[max_index][k:n], U[k][k:n] = U[k][k:n], U[max_index][k:n]
             PF = dot(P, PF)
             LF = dot(P, LF)
             swap_count += 1

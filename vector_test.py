@@ -223,6 +223,82 @@ def test_cross_product():
         vec.cross(L, M)
 
 
+def test_matrix_multiplication():
+    """Test the matrix multiplication of two vectors."""
+    A = Vector([[1, 2], [3, 4]])
+    B = Vector([[5, 6], [7, 8]])
+    C = vec.dot(A, B)
+    expected_C = Vector([[19, 22], [43, 50]])
+    assert C == expected_C
+    C = A @ B
+    assert C == expected_C
+
+    D = Vector([[1, 2, 3], [4, 5, 6]])
+    E = Vector([[-7, 8], [9, 10], [-11, 12]])
+    F = vec.dot(D, E)
+    expected_F = Vector([[-22, 64], [-49, 154]])
+    assert F == expected_F
+    F = D @ E
+    assert F == expected_F
+    F = vec.matmul(D, E)
+    assert F == expected_F
+
+    G = Vector([[1, 2], [3, 4], [-5, 6]])
+    H = Vector([[7, 8, 0], [10, 11, 12]])
+    I = vec.matmul(G, H)
+    expected_I = Vector([[27, 30, 24], [61, 68, 48], [25, 26, 72]])
+    assert I == expected_I
+    I = vec.dot(G, H)
+    assert I == expected_I
+    I = G @ H
+    assert I == expected_I
+
+    J = Vector([[1, 2, 3, 4], [5, 6, 7, 8]])
+    K = Vector([[9, 10], [11, 12], [13, 14], [-5, 16]])
+    L = J @ K
+    expected_L = Vector([[50, 140], [162, 348]])
+    L = vec.matmul(J, K)
+    assert L == expected_L
+
+    M = Vector([[1, 2], [3, 4]])
+    N = Vector([[5, 6, 7], [8, 9, 10]])
+    O = vec.dot(M, N)
+    expected_O = Vector([[21, 24, 27], [47, 54, 61]])
+    assert O == expected_O
+
+    P = Vector([[1, 2, 3], [4, 5, 6]])
+    Q = Vector([[7, 8], [9, 10]])
+    with pytest.raises(ValueError):
+        vec.dot(P, Q)
+    with pytest.raises(ValueError):
+        vec.matmul(P, Q)
+    with pytest.raises(ValueError):
+        P @ Q
+    assert vec.dot(Q, P) == Vector([[39, 54, 69], [49, 68, 87]])
+
+    R = Vector([[5, 3, 2], [8, 6, 0], [2, 1, 3]])
+    S = Vector([2, 1, 0])
+    T = vec.matmul(R, S)
+    expected_T = Vector([13, 22, 5])
+    assert T == expected_T
+
+    U = Vector([[4, 3, 1], [9, 3, 2], [0, 1, 5]])
+    V = Vector([2, 1, 0])
+    W = vec.dot(U, V)
+    expected_W = Vector([11, 21, 1])
+    assert W == expected_W
+
+    A = Vector([[1, 2, 3], [4, 5, 6], [7, 7, 9]])
+    B = A.copy()
+    A_inv = vec.inv(A)
+    print(A)
+
+
+test_matrix_multiplication()
+
+
+
+
 def test_norm():
     """Test the norm of a vector."""
     A = Vector([1, 2, 3])
@@ -266,7 +342,60 @@ def test_norm():
 
     M = Vector([[5, 3, 1], [0, 2, 9]])
     assert_equal(vec.norm(M), 10.954451150103322)
-    
+
+
+def test_getitem():
+    """Test the getitem method of a vector."""
+    A = Vector([1, 2, 3])
+    assert A[0] == 1
+    assert A[1] == 2
+    assert A[2] == 3
+    with pytest.raises(IndexError):
+        A[3]
+
+    B = Vector([1, 2, 3, 4])
+    assert B[0] == 1
+    assert B[1] == 2
+    assert B[2] == 3
+    assert B[3] == 4
+    with pytest.raises(IndexError):
+        B[4]
+
+    C = Vector([[1, 2], [3, 4]])
+    assert C[0] == Vector([1, 2])
+    assert C[1] == Vector([3, 4])
+    with pytest.raises(IndexError):
+        C[2]
+
+
+def test_setitem():
+    """Test the setitem method of a vector."""
+    A = Vector([1, 2, 3])
+    A[0] = 4
+    A[1] = 5
+    A[2] = 6
+    expected_A = Vector([4, 5, 6])
+    assert A == expected_A
+
+    B = Vector([1, 2, 3, 4])
+    B[0] = 5
+    B[1] = 6
+    B[2] = 7
+    B[3] = 8
+    expected_B = Vector([5, 6, 7, 8])
+    assert B == expected_B
+
+    C = Vector([[1, 2], [3, 4]])
+    C[0] = Vector([5, 6])
+    C[1] = Vector([7, 8])
+    expected_C = Vector([[5, 6], [7, 8]])
+    assert C == expected_C
+
+    D = Vector([[1, 2, 3], [4, 5, 6]])
+    with pytest.raises(ValueError):
+        D[0] = Vector([7, 8])
+
+
 
 def test_determinant():
     """Test the determinant of a matrix."""
