@@ -288,16 +288,6 @@ def test_matrix_multiplication():
     expected_W = Vector([11, 21, 1])
     assert W == expected_W
 
-    A = Vector([[1, 2, 3], [4, 5, 6], [7, 7, 9]])
-    B = A.copy()
-    A_inv = vec.inv(A)
-    print(A)
-
-
-test_matrix_multiplication()
-
-
-
 
 def test_norm():
     """Test the norm of a vector."""
@@ -347,6 +337,7 @@ def test_norm():
 def test_getitem():
     """Test the getitem method of a vector."""
     A = Vector([1, 2, 3])
+    assert A[:] == Vector([1, 2, 3])
     assert A[0] == 1
     assert A[1] == 2
     assert A[2] == 3
@@ -360,12 +351,40 @@ def test_getitem():
     assert B[3] == 4
     with pytest.raises(IndexError):
         B[4]
+    with pytest.raises(IndexError):
+        B[0, 0]
 
     C = Vector([[1, 2], [3, 4]])
+    assert C[:] == Vector([[1, 2], [3, 4]])
     assert C[0] == Vector([1, 2])
     assert C[1] == Vector([3, 4])
+    assert C[0, 0] == 1
+    assert C[0][0] == 1
     with pytest.raises(IndexError):
         C[2]
+    with pytest.raises(IndexError):
+        C[0, 2]
+
+    D = Vector([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert D[1:] == Vector([[4, 5, 6], [7, 8, 9]])
+    assert D[:1] == Vector([[1, 2, 3]])
+    assert D[1:2] == Vector([[4, 5, 6]])
+    assert D[1:3] == Vector([[4, 5, 6], [7, 8, 9]])
+
+    E = Vector([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
+    assert E[:, :1] == Vector([[1], [5], [9]])
+    assert E[:, 1:3] == Vector([[2, 3], [6, 7], [10, 11]])
+
+    F = Vector([[2, 2, 5], [3, 0, 4], [8, 6, 1]])
+    assert F[1:, :2] == Vector([[3, 0], [8, 6]])
+    assert F[1:2, 1:3] == Vector([[0, 4]])
+    assert F[:-1, :] == Vector([[2, 2, 5], [3, 0, 4]])
+    assert F[1:, ::2] == Vector([[3, 4], [8, 1]])
+
+    G = Vector([1, 2, 3, 4, 5, 6])
+    assert G[::2] == Vector([1, 3, 5])
+    assert G[1::2] == Vector([2, 4, 6])
+    assert G[::3] == Vector([1, 4])
 
 
 def test_setitem():

@@ -5,7 +5,6 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import sys
 
 
 # Define the rotation matrix
@@ -48,7 +47,7 @@ def unitary_step(U):
     where
     U_0 = A.
     """
-    U_inv_transpose = vec.inv(U).T.copy()
+    U_inv_transpose = vec.inv(U).T
     return 0.5 * (U + U_inv_transpose)
 
 
@@ -61,8 +60,6 @@ def polar_decomposition(A: Vector, tol=1e-12):
     U = A.copy()
     while True:
         U_new = unitary_step(U)
-        # print(f"Determinant of U_new: {vec.det(U_new)}")
-        # print(f"Orthogonality check: {vec.dot(U_new.T, U_new)}")
         if vec.norm(U_new - U) < tol:
             return U_new
         U = U_new
@@ -77,11 +74,7 @@ def update(num):
     R += R_dot
     R = polar_decomposition(R)
     det = vec.det(R)
-    print(f"Determinant of R: {det}", end='\n\n')
-    if det < 0:
-        sys.exit(1)
-    # print(vec.det(R))
-    # print(R)
+    # print(f"Determinant of R: {det}", end='\n\n')
     v_new = vec.dot(R, v)
     quiver.remove()
     quiver = ax.quiver(0, 0, 0, v_new[0], v_new[1], v_new[2])

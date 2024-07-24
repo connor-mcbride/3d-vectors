@@ -142,18 +142,41 @@ class Vector:
         
         if self.dimension == 2:
             if isinstance(index, tuple):
-                if len(index) != 2:
-                    raise ValueError("Index tuple must have exactly 2 elements for 2D vectors.")
-                return self.components[index[0]][index[1]]
-            else:
+                if len(index) == 1:
+                    return Vector(self.components[index[0]])
+                
+                elif len(index) == 2:
+                    if isinstance(index[0], slice):
+                        row_start, row_stop, row_step = index[0].start, index[0].stop, index[0].step
+                        row_slice = slice(row_start, row_stop, row_step)
+                    else:
+                        row_slice = index[0]
+                    
+                    if isinstance(index[1], slice):
+                        col_start, col_stop, col_step = index[1].start, index[1].stop, index[1].step
+                        col_slice = slice(col_start, col_stop, col_step)
+                    else:
+                        col_slice = index[1]
+
+                    if isinstance(row_slice, slice) and isinstance(col_slice, slice):
+                        return Vector([row[col_slice] for row in self.components[row_slice]])
+                    elif isinstance(row_slice, slice):
+                        return Vector([row[col_slice] for row in self.components[row_slice]])
+                    elif isinstance(col_slice, slice):
+                        return Vector([self.components[row_slice][col] for col in range(col_slice.start or 0, col_slice.stop or len(self.components[row_slice]), col_slice.step or 1)])
+                    else:
+                        return self.components[row_slice][col_slice]
+                else:
+                    raise IndexError("Invalid index.")
+                
+            else: # Index is slice or int
                 return Vector(self.components[index])
+            
         elif self.dimension == 1:
             if isinstance(index, (int, slice)):
                 return self.components[index]
             else:
-                raise ValueError("Invalid index type.")
-        else:
-            raise ValueError("Invalid vector dimension.")
+                raise IndexError("Invalid index type for 1D vector.")
         
 
     def __setitem__(self, index: int | tuple | slice, value: int | float | list | object) -> None:
