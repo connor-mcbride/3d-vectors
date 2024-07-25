@@ -27,7 +27,7 @@ v = Vector([1/math.sqrt(3), 1/math.sqrt(3), 1/math.sqrt(3)])
 
 # Rotation axis and angle
 axis = Vector([1/math.sqrt(2), 1/math.sqrt(2), 0])
-theta = 1  # Small angle for smooth animation
+theta = 0.1  # Small angle for smooth animation
 omega = axis * theta
 R = rotation_matrix(axis, theta) # Initial rotation matrix
 
