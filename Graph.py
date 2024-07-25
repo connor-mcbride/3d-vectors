@@ -5,11 +5,11 @@
 # Labels the graph and the axes
 
 import tkinter as tk
+from math import sin, cos, pi
 
 
 class Graph:
-    """Graph class for plotting 2D graphs.
-    """
+    """Graph class for plotting 2D graphs."""
     def __init__(self) -> None:
         self.canvas_width = 1000
         self.canvas_height = 750
@@ -20,6 +20,8 @@ class Graph:
         self._ylabel = "Y"
         self._xlim = [0, 10]
         self._ylim = [0, 10]
+        self._gridlines = False
+        self.plots = []
 
         self.initialize_canvas()
 
@@ -80,7 +82,6 @@ class Graph:
             raise ValueError("figsize must be a tuple of length 2.")
         self.graph_width = figsize[0]
         self.graph_height = figsize[1]
-        self.initialize_canvas()
 
 
     def window(self, window: tuple) -> None:
@@ -88,24 +89,34 @@ class Graph:
             raise ValueError("window must be a tuple of length 2.")
         self.canvas_width = window[0]
         self.canvas_height = window[1]
-        self.initialize_canvas()
 
 
-    def plot(self, xcoords: list, ycoords: list, gridlines: bool=False, color: str="black") -> None:
+    def add_plot(self, xcoords: list, ycoords: list, plot_type: str, color: str) -> None:
         if len(xcoords) != len(ycoords):
             raise ValueError("xcoords and ycoords must have the same length.")
-        points = list(zip(xcoords, ycoords))
+        self.plots.append((xcoords, ycoords, plot_type, color))
+        self._update_limits()
+        self._redraw()
 
-        # Scale x and y axes
-        self._xlim = [min(xcoords), max(xcoords)]
-        self._ylim = [min(ycoords), max(ycoords)]
+    
+    def _update_limits(self) -> None:
+        all_x = [x for plot in self.plots for x in plot[0]]
+        all_y = [y for plot in self.plots for y in plot[1]]
+        self._xlim = [min(all_x), max(all_x)]
+        self._ylim = [min(all_y), max(all_y)]
+
+
+    def _redraw(self) -> None:
+        self.clear()
+        self.initialize_canvas()
+
         x_margin = self.graph_width / 20
         y_margin = self.graph_height / 20
-
-        # Draw axes labels
         num_ticks = 10
         xscale = (self.graph_width - (2 * x_margin)) / num_ticks
         yscale = (self.graph_height - (2 * y_margin)) / num_ticks
+
+        # Draw axes labels
         for i in range(num_ticks + 1):
             x = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + (i * xscale)
             y = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - (i * yscale)
@@ -116,12 +127,16 @@ class Graph:
             self.canvas.create_line(x, self.canvas_height / 2 + self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2 + 10)
             self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 - self.graph_width / 2 - 10, y)
 
-            # Draw gridlines if requested
-            if gridlines:
-                self.canvas.create_line(x, self.canvas_height / 2 - self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2, fill="gray")
-                self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 + self.graph_width / 2, y, fill="gray")
-        
-        # Draw lines between points
+        # Draw plots
+        for xcoords, ycoords, plot_type, color in self.plots:
+            if plot_type == 'line':
+                self._draw_line_plot(xcoords, ycoords, color, x_margin, y_margin)
+            elif plot_type == 'scatter':
+                self._draw_scatter_plot(xcoords, ycoords, color, x_margin, y_margin)
+
+    
+    def _draw_line_plot(self, xcoords: list, ycoords: list, color: str, x_margin: float, y_margin: float) -> None:
+        points = list(zip(xcoords, ycoords))
         for i in range(len(points) - 1):
             x1, y1 = points[i]
             x2, y2 = points[i + 1]
@@ -132,63 +147,65 @@ class Graph:
             self.canvas.create_line(x1, y1, x2, y2, fill=color, width=2)
 
 
-    def scatter(self, xcoords: list, ycoords: list, gridlines: bool=False, color: str="black") -> None:
-        if len(xcoords) != len(ycoords):
-            raise ValueError("xcoords and ycoords must have the same length.")
+    def _draw_scatter_plot(self, xcoords: list, ycoords: list, color: str, x_margin: float, y_margin: float) -> None:
         points = list(zip(xcoords, ycoords))
-
-        # Scale x and y axes
-        self._xlim = [min(xcoords), max(xcoords)]
-        self._ylim = [min(ycoords), max(ycoords)]
-        x_margin = self.graph_width / 20
-        y_margin = self.graph_height / 20
-
-        # Draw axes labels
-        num_ticks = 10
-        xscale = (self.graph_width - (2 * x_margin)) / num_ticks
-        yscale = (self.graph_height - (2 * y_margin)) / num_ticks
-        for i in range(num_ticks + 1):
-            x = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + (i * xscale)
-            y = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - (i * yscale)
-            self.canvas.create_text(x, self.canvas_height / 2 + self.graph_height / 2 + 20, 
-                               text=f"{(self._xlim[0] + i * (self._xlim[1] - self._xlim[0]) / num_ticks):.1f}")
-            self.canvas.create_text(self.canvas_width / 2 - self.graph_width / 2 - 20, y, 
-                               text=f"{(self._ylim[0] + i * (self._ylim[1] - self._ylim[0]) / num_ticks):.1f}", angle=90)
-            self.canvas.create_line(x, self.canvas_height / 2 + self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2 + 10)
-            self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 - self.graph_width / 2 - 10, y)
-
-            # Draw gridlines if requested
-            if gridlines:
-                self.canvas.create_line(x, self.canvas_height / 2 - self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2, fill="gray")
-                self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 + self.graph_width / 2, y, fill="gray")
-
-        # Draw points on the graph
         for x, y in points:
             x = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + ((x - self._xlim[0]) / (self._xlim[1] - self._xlim[0])) * (self.graph_width - (2 * x_margin))
             y = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - ((y - self._ylim[0]) / (self._ylim[1] - self._ylim[0])) * (self.graph_height - (2 * y_margin))
             self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill=color)
-    
-    
+
+
+    def _draw_gridlines(self) -> None:
+        x_margin = self.graph_width / 20
+        y_margin = self.graph_height / 20
+        num_ticks = 10
+        xscale = (self.graph_width - (2 * x_margin)) / num_ticks
+        yscale = (self.graph_height - (2 * y_margin)) / num_ticks
+
+        for i in range(num_ticks + 1):
+            x = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + (i * xscale)
+            y = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - (i * yscale)
+            self.canvas.create_line(x, self.canvas_height / 2 - self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2, dash=(4, 4), fill="grey")
+            self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 + self.graph_width / 2, y, dash=(4, 4), fill="grey")
+
+
+    def plot(self, xcoords: list, ycoords: list, color: str) -> None:
+        self.add_plot(xcoords, ycoords, 'line', color)
+
+
+    def scatter(self, xcoords: list, ycoords: list, color: str) -> None:
+        self.add_plot(xcoords, ycoords, 'scatter', color)
+
+
     def clear(self) -> None:
         self.canvas.delete("all")
 
     
+    def grid(self) -> None:
+        self._gridlines = True
+    
+
     def show(self) -> None:
+        if self._gridlines:
+            self._draw_gridlines()
         self.root.mainloop()
 
 
 graph = Graph()
 graph.title("Velocity vs. Time")
-graph.xlabel("Time")
-graph.ylabel("Velocity")
+graph.xlabel("Time (s)")
+graph.ylabel("Velocity (m/s)")
 graph.figure((800, 500))
+graph.window((1000, 800))
 
-from math import sin, pi
-X = [i * (6 * pi) / 100 for i in range(100)]
-Y = [sin(x) for x in X]
-graph.scatter(X, Y, gridlines=True, color="red")
+X1 = [i * (6 * pi) / 100 for i in range(100)]
+Y1 = [sin(x) for x in X1]
+graph.scatter(X1, Y1, color="red")
 
-# X = [i for i in range(11)]
-# Y = [2 * x for x in X]
-# graph.scatter(X, Y, color="blue", gridlines=True)
+X2 = X1.copy()
+Y2 = [cos(x) for x in X2]
+graph.plot(X2, Y2, color="green")
+
+graph.grid()
+
 graph.show()

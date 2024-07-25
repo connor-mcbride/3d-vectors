@@ -1,4 +1,5 @@
-import copy
+from copy import deepcopy
+
 
 class Vector:
     """Vector class for 1D and 2D vectors.
@@ -267,7 +268,7 @@ class Vector:
     
 
     def copy(self) -> 'Vector':
-        new_components = copy.deepcopy(self.components)
+        new_components = deepcopy(self.components)
         return Vector(new_components)
 
 
