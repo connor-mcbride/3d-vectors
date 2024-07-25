@@ -395,6 +395,8 @@ def test_setitem():
     A[2] = 6
     expected_A = Vector([4, 5, 6])
     assert A == expected_A
+    with pytest.raises(IndexError):
+        A[3] = 7
 
     B = Vector([1, 2, 3, 4])
     B[0] = 5
@@ -407,14 +409,42 @@ def test_setitem():
     C = Vector([[1, 2], [3, 4]])
     C[0] = Vector([5, 6])
     C[1] = Vector([7, 8])
-    expected_C = Vector([[5, 6], [7, 8]])
+    C[0, 0] = 9
+    C[1][0] = 3
+    expected_C = Vector([[9, 6], [3, 8]])
     assert C == expected_C
 
     D = Vector([[1, 2, 3], [4, 5, 6]])
     with pytest.raises(ValueError):
         D[0] = Vector([7, 8])
 
+    E = Vector([[1, 2, 3, 4], [5, 6, 7, 8]])
+    E[:, 0] = Vector([9, 10])
+    E[:, 1] = Vector([11, 12])
+    E[:, 2] = Vector([13, 14])
+    E[:, 3] = Vector([15, 16])
+    expected_E = Vector([[9, 11, 13, 15], [10, 12, 14, 16]])
+    assert E == expected_E
+    E[1] = 4
+    expected_E = Vector([[9, 11, 13, 15], [4, 4, 4, 4]])
+    assert E == expected_E
 
+    F = Vector([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    F[0, :] = [9, 8, 7]
+    F[:, :2] = Vector([[6, 5], [4, 3], [2, 1]])
+    F[:-1, :] = Vector([[5, 3, 1], [3, 3, 0]])
+    expected_F = Vector([[5, 3, 1], [3, 3, 0], [2, 1, 9]])
+    assert F == expected_F
+
+    G = Vector([1, 2, 3, 4, 5, 6])
+    G[::2] = Vector([6, 7, 8])
+    assert G == Vector([6, 2, 7, 4, 8, 6])
+    G[1:5:2] = Vector([9, 10])
+    assert G == Vector([6, 9, 7, 10, 8, 6])
+    G[::3] = Vector([12, 13])
+    assert G == Vector([12, 9, 7, 13, 8, 6])
+
+test_setitem()
 
 def test_determinant():
     """Test the determinant of a matrix."""
@@ -422,8 +452,8 @@ def test_determinant():
                 [3, 0]])
     assert_equal(vec.det(A), -18)
 
-    B = Vector([[5, 1, 3], 
-                [9, 7, 0], 
+    B = Vector([[5, 1, 3],
+                [9, 7, 0],
                 [5, 5, 0]])
     assert_equal(vec.det(B), 30)
 
