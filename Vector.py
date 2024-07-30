@@ -410,7 +410,7 @@ def lu_decomposition(vector: Vector | list) -> tuple[Vector, Vector, Vector, int
     swap_count = 0
 
     for k in range(n-1):
-        max_index = argmax(absolute([row[0] for row in U])) + k
+        max_index = argmax(absolute(U[:, 0])) + k
         if max_index != k:
             P = eye(n)
             P[max_index][k:n], P[k][k:n] = P[k][k:n], P[max_index][k:n]

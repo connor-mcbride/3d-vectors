@@ -22,6 +22,7 @@ class Graph:
         self._ylim = [0, 10]
         self._gridlines = False
         self._legend = False
+        self.num_ticks = 10
         self.plots = []
 
         self.initialize_canvas()
@@ -113,18 +114,17 @@ class Graph:
 
         x_margin = self.graph_width / 20
         y_margin = self.graph_height / 20
-        num_ticks = 10
-        xscale = (self.graph_width - (2 * x_margin)) / num_ticks
-        yscale = (self.graph_height - (2 * y_margin)) / num_ticks
+        xscale = (self.graph_width - (2 * x_margin)) / self.num_ticks
+        yscale = (self.graph_height - (2 * y_margin)) / self.num_ticks
 
         # Draw axes labels
-        for i in range(num_ticks + 1):
+        for i in range(self.num_ticks + 1):
             x = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + (i * xscale)
             y = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - (i * yscale)
             self.canvas.create_text(x, self.canvas_height / 2 + self.graph_height / 2 + 20, 
-                               text=f"{(self._xlim[0] + i * (self._xlim[1] - self._xlim[0]) / num_ticks):.1f}")
+                               text=f"{(self._xlim[0] + i * (self._xlim[1] - self._xlim[0]) / self.num_ticks):.1f}")
             self.canvas.create_text(self.canvas_width / 2 - self.graph_width / 2 - 20, y, 
-                               text=f"{(self._ylim[0] + i * (self._ylim[1] - self._ylim[0]) / num_ticks):.1f}", angle=90)
+                               text=f"{(self._ylim[0] + i * (self._ylim[1] - self._ylim[0]) / self.num_ticks):.1f}", angle=90)
             self.canvas.create_line(x, self.canvas_height / 2 + self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2 + 10)
             self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 - self.graph_width / 2 - 10, y)
 
@@ -159,15 +159,14 @@ class Graph:
     def _draw_gridlines(self) -> None:
         x_margin = self.graph_width / 20
         y_margin = self.graph_height / 20
-        num_ticks = 10
-        xscale = (self.graph_width - (2 * x_margin)) / num_ticks
-        yscale = (self.graph_height - (2 * y_margin)) / num_ticks
+        xscale = (self.graph_width - (2 * x_margin)) / self.num_ticks
+        yscale = (self.graph_height - (2 * y_margin)) / self.num_ticks
 
-        for i in range(num_ticks + 1):
+        for i in range(self.num_ticks + 1):
             x = (self.canvas_width / 2) - (self.graph_width / 2) + x_margin + (i * xscale)
             y = (self.canvas_height / 2) + (self.graph_height / 2) - y_margin - (i * yscale)
-            self.canvas.create_line(x, self.canvas_height / 2 - self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2, dash=(4, 4), fill="grey")
-            self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 + self.graph_width / 2, y, dash=(4, 4), fill="grey")
+            self.canvas.create_line(x, self.canvas_height / 2 - self.graph_height / 2, x, self.canvas_height / 2 + self.graph_height / 2, fill="grey")
+            self.canvas.create_line(self.canvas_width / 2 - self.graph_width / 2, y, self.canvas_width / 2 + self.graph_width / 2, y, fill="grey")
 
         
     def _draw_legend(self) -> None:
