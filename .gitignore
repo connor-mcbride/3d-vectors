@@ -1,6 +1,5 @@
 # Ignore virtual environments
 .venv/
-.env/
 
 # Ignore Python cache files
 __pycache__/
@@ -18,3 +17,8 @@ lu.py
 # Ignore IDE specific files
 .idea/
 .vscode/
+
+# Ignore test files
+tests/
+.coverage
+htmlcov/

@@ -25,26 +25,32 @@ class Vector:
         if not isinstance(components, list):
             raise TypeError("Vector must be a list.")
         
-        if components and all(isinstance(item, list) for item in components):
-            length = len(components[0])
-            if not all(len(item) == length for item in components):
-                raise ValueError("All sub-vectors must have the same length.")
-        elif any(isinstance(item, list) for item in components):
-            raise ValueError("Invalid vector format: mix of lists and non-lists.")
-        
         if len(components) == 0:
-            self.shape = 0,
+            self.shape = (0,)
             self.dimension = 1
-        elif isinstance(components[0], list):
-            if isinstance(components[0][0], list):
-                raise TypeError("Only supports 1D and 2D vectors.")
-            self.shape = (len(components), len(components[0]))
+            self.components = components
+            self._transposed = False
+            return
+
+        # Determine if the vector is 1D or 2D
+        is_2d = isinstance(components[0], list)
+        
+        if is_2d:
+            length = len(components[0])
+            for item in components:
+                if not isinstance(item, list) or len(item) != length:
+                    raise ValueError("All sub-vectors must be lists of the same length.")
+            self.shape = (len(components), length)
             self.dimension = 2
         else:
-            self.shape = len(components),
+            if any(isinstance(item, list) for item in components):
+                raise ValueError("Invalid vector format: mix of lists and non-lists.")
+            self.shape = (len(components),)
             self.dimension = 1
-        self._transposed = False
+        
         self.components = components
+        self._transposed = False
+
 
     
     @property
@@ -143,45 +149,41 @@ class Vector:
         
         if self.dimension == 2:
             if isinstance(index, tuple):
-                if len(index) == 1:
-                    return Vector(self.components[index[0]])
-                
-                elif len(index) == 2:
-                    row_index, col_index = index
-                    if isinstance(row_index, slice):
-                        row_start, row_stop, row_step = row_index.indices(len(self.components))
-                        row_slice = slice(row_start, row_stop, row_step)
-                    else:
-                        row_slice = row_index
-                    
-                    if isinstance(col_index, slice):
-                        col_start, col_stop, col_step = col_index.indices(len(self.components[0]))
-                        col_slice = slice(col_start, col_stop, col_step)
-                    else:
-                        col_slice = col_index
+                row_index, col_index = index if len(index) == 2 else (index[0], slice(None))
 
-                    if isinstance(row_slice, slice) and isinstance(col_slice, slice):
-                        return Vector([row[col_slice] for row in self.components[row_slice]])
-                    elif isinstance(row_slice, slice):
-                        return Vector([row[col_slice] for row in self.components[row_slice]])
-                    elif isinstance(col_slice, slice):
-                        return Vector([self.components[row_slice][col] for col in range(col_slice.start, col_slice.stop, col_slice.step)])
-                    else:
-                        return self.components[row_slice][col_slice]
-                else:
-                    raise IndexError("Invalid index.")
+                # Convert integers to slices for consistent handling
+                row_slice = row_index if isinstance(row_index, slice) else slice(row_index, row_index + 1)
+                col_slice = col_index if isinstance(col_index, slice) else slice(col_index, col_index + 1)
                 
-            else: # Index is slice or int
-                return Vector(self.components[index])
+                # Adjust slices to handle None values
+                row_slice = slice(*row_slice.indices(len(self.components)))
+                col_slice = slice(*col_slice.indices(len(self.components[0])))
+                
+                # Check for out-of-bounds access
+                if (row_slice.start >= len(self.components) or row_slice.stop > len(self.components) or
+                    col_slice.start >= len(self.components[0]) or col_slice.stop > len(self.components[0])):
+                    raise IndexError("Index out of bounds.")
+                
+                # Perform slicing
+                sliced = [row[col_slice] for row in self.components[row_slice]]
+                if row_slice.stop - row_slice.start == 1 and col_slice.stop - col_slice.start == 1:
+                    return sliced[0][0]  # Return a single element
+                elif row_slice.stop - row_slice.start == 1:
+                    return Vector(sliced[0])  # Return a row vector
+                elif col_slice.stop - col_slice.start == 1:
+                    return Vector([row[0] for row in sliced])  # Return a column vector
+                
+                return Vector(sliced)  # Return a matrix (2D slice)
             
-        elif self.dimension == 1:
-            if isinstance(index, (int, slice)):
-                return self.components[index]
-            elif isinstance(index, tuple):
-                if len(index) == 1:
-                    return self.components[index[0]]
-                raise IndexError("Too many indices for array.")
+            return Vector(self.components[index])  # Index is a slice or int
         
+        else:  # 1D vector
+            if isinstance(index, tuple):
+                if len(index) != 1:
+                    raise IndexError("Too many indices for array.")
+                index = index[0]
+            return self.components[index]
+
 
     def __setitem__(self, index: int | tuple | slice, value: int | float | list | object) -> None:
         if not isinstance(index, (int, tuple, slice)):
@@ -240,6 +242,7 @@ class Vector:
                 if len(index) == 1:
                     self.components[index[0]] = value
                 raise IndexError("Too many indices for array.")
+
 
     def __matmul__(self, matrix: 'Vector') -> 'Vector':
         return matmul(self, matrix)
@@ -365,15 +368,19 @@ def argmax(vector: Vector | list) -> int:
     return max(range(len(vector)), key=lambda i: vector[i])
 
 
-def zeros(shape: tuple) -> Vector:
+def zeros(shape: tuple | int) -> Vector:
     """Returns a zero vector or matrix of the given shape."""
+    if not isinstance(shape, tuple):
+        shape = (shape,)
     if len(shape) == 1:
         return Vector([0 for _ in range(shape[0])])
     return Vector([[0 for _ in range(shape[1])] for _ in range(shape[0])])
 
 
-def ones(shape: tuple) -> Vector:
+def ones(shape: tuple | int) -> Vector:
     """Returns a vector or matrix of ones of the given shape."""
+    if not isinstance(shape, tuple):
+        shape = (shape,)
     if len(shape) == 1:
         return Vector([1 for _ in range(shape[0])])
     return Vector([[1 for _ in range(shape[1])] for _ in range(shape[0])])

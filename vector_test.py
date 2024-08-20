@@ -372,12 +372,12 @@ def test_getitem():
     assert D[1:3] == Vector([[4, 5, 6], [7, 8, 9]])
 
     E = Vector([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
-    assert E[:, :1] == Vector([[1], [5], [9]])
+    assert E[:, :1] == Vector([1, 5, 9])
     assert E[:, 1:3] == Vector([[2, 3], [6, 7], [10, 11]])
 
     F = Vector([[2, 2, 5], [3, 0, 4], [8, 6, 1]])
     assert F[1:, :2] == Vector([[3, 0], [8, 6]])
-    assert F[1:2, 1:3] == Vector([[0, 4]])
+    assert F[1:2, 1:3] == Vector([0, 4])
     assert F[:-1, :] == Vector([[2, 2, 5], [3, 0, 4]])
     assert F[1:, ::2] == Vector([[3, 4], [8, 1]])
 
